@@ -92,14 +92,14 @@ for (s,b,a,o,r) in stepthrough(m, policy, "s,b,a,o,r", max_steps=100)
 end
 println("Undiscounted reward was $rsum.")
 
-
-Error:
-````
+```
+ERROR:
+```
 julia> policy = solve(solver, m)
 ERROR: MethodError: Cannot `convert` an object of type Array{Float64,1} to an object of type Int64
 Closest candidates are:
   convert(::Type{Int64}, ::Type{CUDAnative.AS.Generic}) at C:\Users\danor\.julia\packages\CUDAnative\C91oY\src\device\pointer.jl:23
   convert(::Type{Int64}, ::Type{CUDAnative.AS.Global}) at C:\Users\danor\.julia\packages\CUDAnative\C91oY\src\device\pointer.jl:24
   convert(::Type{Int64}, ::Type{CUDAnative.AS.Shared}) at C:\Users\danor\.julia\packages\CUDAnative\C91oY\src\device\pointer.jl:25
-  ...
+  
 ```
