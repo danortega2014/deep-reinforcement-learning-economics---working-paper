@@ -1,4 +1,4 @@
-
+```
 using POMDPs,POMDPModelTools
 # state are real demand
 Base.@kwdef struct firmgame <: POMDP{Float64, Symbol, Tuple{Float64,Float64,Float64, Float64}} # POMDP{State, Action, Observation
@@ -71,15 +71,10 @@ function POMDPs.convert_o(::Type{A}, o::Tuple{Float64,Float64,Float64,Float64}, 
 end
 POMDPs.convert_o(::Type{Tuple{Float64,Float64,Float64,Float64}}, o::A, m::firmgame) where A<:AbstractArray = (o[1], o[2], o[3], o[4])
 
-
-
 POMDPs.discount(pomdp::firmgame) = pomdp.discount_factor
 POMDPs.initialstate(pomdp::firmgame) = Deterministic(34.0)
 POMDPs.initialobs(m::firmgame, s::Float64) = Deterministic((s,1.0,1.0,1.0))
 m = firmgame()
-
-
-
 
 using DeepQLearning
 using Flux
@@ -95,7 +90,6 @@ solver = DeepQLearningSolver(qnetwork = model, max_steps=10000,
                              learning_rate=0.005,log_freq=500,
                              recurrence=true,double_q=true, prioritized_replay=true)
 policy = solve(solver, m)
-
 
 ```
 
