@@ -1,7 +1,7 @@
-```
+
 using POMDPs,POMDPModelTools
 # state are real demand
-Base.@kwdef struct firmgame <: POMDP{Float64, Symbol, Tuple{Float64,Int64, Int64}} # POMDP{State, Action, Observation
+Base.@kwdef struct firmgame <: POMDP{Float64, Symbol, Tuple{Float64,Float64,Float64, Float64}} # POMDP{State, Action, Observation
     discount_factor::Float64 = 0.95 # discount
 end
 m = firmgame()
@@ -65,10 +65,19 @@ function POMDPs.gen(m::firmgame, s::Float64, a::Symbol, rng)
     return (sp=sp, o=o, r=r)
 end
 
+function POMDPs.convert_o(::Type{A}, o::Tuple{Float64,Float64,Float64,Float64}, m::firmgame) where A<:AbstractArray
+    v = copyto!(A(undef, 4), o)
+    return v
+end
+POMDPs.convert_o(::Type{Tuple{Float64,Float64,Float64,Float64}}, o::A, m::firmgame) where A<:AbstractArray = (o[1], o[2], o[3], o[4])
+
+
+
 POMDPs.discount(pomdp::firmgame) = pomdp.discount_factor
 POMDPs.initialstate(pomdp::firmgame) = Deterministic(34.0)
 POMDPs.initialobs(m::firmgame, s::Float64) = Deterministic((s,1.0,1.0,1.0))
 m = firmgame()
+
 
 
 
@@ -100,3 +109,13 @@ Closest candidates are:
   convert_o(::Type{V}, ::Any, ::FullyObservablePOMDP) where V<:AbstractArray at C:\Users\danor\.julia\packages\POMDPModelTools\N593Y\src\fully_observable_pomdp.jl:19
   
  ```
+ error after adding convert_o, which I'm not sure if was implemented correctly:
+ ```
+ 
+julia> policy = solve(solver,m)
+ERROR: MethodError: no method matching +(::Deterministic{Float64}, ::Float64)
+Closest candidates are:
+  +(::Any, ::Any, ::Any, ::Any...) at operators.jl:538
+  +(::Bool, ::T) where T<:AbstractFloat at bool.jl:103
+  +(::Missing, ::Number) at missing.jl:115
+```
