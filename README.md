@@ -1,8 +1,7 @@
 ```
-
 using POMDPs,POMDPModelTools
 # state are real demand
-Base.@kwdef struct firmgame <: POMDP{Int64, Symbol, Tuple{Int64,Int64, Int64}} # POMDP{State, Action, Observation
+Base.@kwdef struct firmgame <: POMDP{Float64, Symbol, Tuple{Float64,Int64, Int64}} # POMDP{State, Action, Observation
     discount_factor::Float64 = 0.95 # discount
 end
 m = firmgame()
@@ -11,7 +10,7 @@ POMDPs.actions(pomdp::firmgame) = [:np2, :np1, :p0, :p1, :p2, :invest, :borrow, 
 
 using Distributions
 
-function POMDPs.gen(m::firmgame, s::Int64, a::Symbol, rng)
+function POMDPs.gen(m::firmgame, s::Float64, a::Symbol, rng)
     s1  = s +  rand(Normal(0, 1))
     # transition model
     if a==:np2
@@ -31,6 +30,7 @@ function POMDPs.gen(m::firmgame, s::Int64, a::Symbol, rng)
     else 
         sp = Deterministic(s1)
     end
+
     o1 = sp + rand(Normal(0, 1))
     # observation model
     if a == :np2  
@@ -66,8 +66,8 @@ function POMDPs.gen(m::firmgame, s::Int64, a::Symbol, rng)
 end
 
 POMDPs.discount(pomdp::firmgame) = pomdp.discount_factor
-POMDPs.initialstate(pomdp::firmgame) = Deterministic(34)
-POMDPs.initialobs(m::firmgame, s::Int64) = Deterministic(34+rand(Normal(0, 1), 1))
+POMDPs.initialstate(pomdp::firmgame) = Deterministic(34.0)
+POMDPs.initialobs(m::firmgame, s::Float64) = Deterministic((s,1.0,1.0,1.0))
 m = firmgame()
 
 
@@ -86,6 +86,18 @@ solver = DeepQLearningSolver(qnetwork = model, max_steps=10000,
                              learning_rate=0.005,log_freq=500,
                              recurrence=true,double_q=true, prioritized_replay=true)
 policy = solve(solver, m)
+
+
+using POMDPSimulators
+
+rsum = 0.0
+for (s,b,a,o,r) in stepthrough(m, policy, "s,b,a,o,r", max_steps=100)
+    println("s: $s, b: $([pdf(b,s) for s in states(m)]), a: $a, o: $o r: $r")
+    global rsum += r
+end
+println("Undiscounted reward was $rsum.")
+using Distributions
+Categorical([.10, .20, .40, .20, .10], 5)
 ```
 Error:
 ```
@@ -95,4 +107,4 @@ Closest candidates are:
   +(::Any, ::Any, ::Any, ::Any...) at operators.jl:538
   +(::T, ::T) where T<:Union{Int128, Int16, Int32, Int64, Int8, UInt128, UInt16, UInt32, UInt64, UInt8} at int.jl:86
   +(::Integer, ::Integer) at int.jl:918
- ```
+```
